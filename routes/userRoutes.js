@@ -4,13 +4,12 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-// Get user details
 router.get("/", async (req, res) => {
   console.log("🔹 [USER ROUTE] Received Request to /user");
 
   // Log the incoming headers and query params
-  console.log("🔍 Headers Received:", req.headers);
-  console.log("🔍 Query Parameters:", req.query);
+  console.log(" Headers Received:", req.headers);
+  console.log(" Query Parameters:", req.query);
 
   // Extract token from headers or query
   let token = req.headers.authorization || req.query.token;
@@ -21,30 +20,30 @@ router.get("/", async (req, res) => {
     }
   }
 
-  console.log("🔹 [USER ROUTE] Token Extracted:", token);
+  console.log(" [USER ROUTE] Token Extracted:", token);
 
   if (!token) {
-    console.error("⚠️ [USER ROUTE] Unauthorized: Token missing");
+    console.error(" [USER ROUTE] Unauthorized: Token missing");
     return res.status(401).json({ error: "Unauthorized: Token missing" });
   }
 
   try {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("✅ [USER ROUTE] Decoded Token:", decoded);
+    console.log(" [USER ROUTE] Decoded Token:", decoded);
 
     // Find the user in the database
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      console.error("⚠️ [USER ROUTE] User not found");
+      console.error(" [USER ROUTE] User not found");
       return res.status(404).json({ error: "User not found" });
     }
 
     // Return the user details
     res.json(user);
   } catch (error) {
-    console.error("❌ [USER ROUTE] JWT Error:", error.message);
+    console.error(" [USER ROUTE] JWT Error:", error.message);
     res.status(401).json({ error: "Invalid or expired token" });
   }
 });
@@ -78,29 +77,29 @@ router.put("/", async (req, res) => {
 router.get("/check-first-login", async (req, res) => {
   console.log("🔹 [USER ROUTE] Received Request to Check First Login");
 
-  // Extract token from headers
+  
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
-    console.error("⚠️ [USER ROUTE] Unauthorized: Token missing");
+    console.error(" [USER ROUTE] Unauthorized: Token missing");
     return res.status(401).json({ error: "Unauthorized: Token missing" });
   }
 
   try {
-    // Verify the token
+   
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("✅ [USER ROUTE] Decoded Token:", decoded);
+    console.log(" [USER ROUTE] Decoded Token:", decoded);
 
-    // Find the user in the database
+   
     const user = await User.findById(decoded.id);
     if (!user) {
-      console.error("⚠️ [USER ROUTE] User not found");
+      console.error(" [USER ROUTE] User not found");
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return whether it's the first login
+    
     res.json({ firstLogin: user.firstLogin });
   } catch (error) {
-    console.error("❌ [USER ROUTE] Error Checking First Login:", error.message);
+    console.error(" [USER ROUTE] Error Checking First Login:", error.message);
     res.status(500).json({ error: "Failed to check first login" });
   }
 });
