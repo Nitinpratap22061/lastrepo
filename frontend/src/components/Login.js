@@ -5,7 +5,7 @@ const Login = () => {
 
   const handleLogin = () => {
     // Redirect to GitHub OAuth with the selected access level
-    window.location.href = `https://lastrepo-6nm3.onrender.com/auth/github?scope=${accessLevel}`;
+    window.location.href = `https://lastrepo-6nm3.onrender.com/auth/github?accessLevel=${accessLevel}`;
   };
 
   return (
