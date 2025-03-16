@@ -14,7 +14,7 @@ const IntroForm = ({ user }) => {
     try {
       // Send the updated user data to the backend
       const response = await axios.put(
-        "http://localhost:5000/user",
+        "https://lastrepo-6nm3.onrender.com/user",
         { linkedin, source, isNewUser: false }, // Set isNewUser to false
         {
           headers: {
