@@ -12,21 +12,17 @@ const IntroForm = ({ user }) => {
     const token = localStorage.getItem("token");
 
     try {
-      // Send the updated user data to the backend
       const response = await axios.put(
         "https://lastrepo-6nm3.onrender.com/user",
-        { linkedin, source, isNewUser: false }, // Set isNewUser to false
+        { linkedin, source, isNewUser: false },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Use backticks for template literals
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      // Update the user data in localStorage
       localStorage.setItem("user", JSON.stringify(response.data));
-
-      // Redirect to the dashboard after successful submission
       navigate("/dashboard");
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -44,6 +40,19 @@ const IntroForm = ({ user }) => {
             <input
               type="text"
               value={user?.name || ""}
+              readOnly
+              style={{ width: "100%", padding: "8px", marginTop: "5px", backgroundColor: "#f0f0f0" }}
+            />
+          </label>
+        </div>
+
+        {/* Username Field */}
+        <div style={{ marginBottom: "15px" }}>
+          <label>
+            Username:
+            <input
+              type="text"
+              value={user?.username || ""}
               readOnly
               style={{ width: "100%", padding: "8px", marginTop: "5px", backgroundColor: "#f0f0f0" }}
             />
