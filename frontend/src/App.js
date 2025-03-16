@@ -41,7 +41,7 @@ function App() {
     } else {
       const storedToken = localStorage.getItem("token");
       if (storedToken) {
-        fetch("http://localhost:5000/user", {
+        fetch("https://lastrepo-6nm3.onrender.com/user", {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
