@@ -10,9 +10,9 @@ router.get(
   (req, res) => {
     const { user, token, accessToken } = req.user;
     if (user.isNewUser) {
-      res.redirect(`${process.env.FRONTEND_URL}/intro?token=${token}&accessToken=${accessToken}`);
+      res.redirect(`/intro?token=${token}&accessToken=${accessToken}`);
     } else {
-      res.redirect(`${process.env.FRONTEND_URL}/dashboard?token=${token}&accessToken=${accessToken}`);
+      res.redirect(`/dashboard?token=${token}&accessToken=${accessToken}`);
     }
   }
 );
