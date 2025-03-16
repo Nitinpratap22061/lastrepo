@@ -17,7 +17,7 @@ function App() {
       localStorage.setItem("accessToken", accessToken);
 
       // Fetch user data after storing the token
-      fetch("http://localhost:5000/user", {
+      fetch("https://lastrepo-6nm3.onrender.com/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
