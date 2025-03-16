@@ -9,7 +9,7 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: "https://lastrepo-6nm3.onrender.com/auth/github/callback",
-      scope: ["user:email", "repo"], // Request access to user email and repositories
+      scope: ["user:email"], // Default scope (only public repos)
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -30,7 +30,7 @@ passport.use(
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
           expiresIn: "1h",
         });
-        return done(null, { user, token, accessToken }); // Pass accessToken to the frontend
+        return done(null, { user, token, accessToken });
       } catch (error) {
         return done(error, null);
       }
