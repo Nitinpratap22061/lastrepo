@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
-        console.log("🚨 No token found, user not authenticated.");
+        console.log(" No token found, user not authenticated.");
         return;
       }
 
@@ -23,15 +23,14 @@ export const AuthProvider = ({ children }) => {
         console.log("✅ User Data Fetched:", res.data);
         setUser(res.data);
       } catch (error) {
-        console.error("❌ Error fetching user:", error.response?.data || error.message);
+        console.error(" Error fetching user:", error.response?.data || error.message);
         setUser(null);
-        localStorage.removeItem("token"); // Clear invalid token
+        localStorage.removeItem("token"); 
       }
     };
 
     fetchUser();
-  }, [token]); // Runs whenever token changes
-
+  }, [token]); 
   return (
     <AuthContext.Provider value={{ user, setUser, setToken }}>
       {children}
