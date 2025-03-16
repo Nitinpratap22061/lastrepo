@@ -4,26 +4,35 @@ import axios from "axios";
 const Dashboard = ({ user }) => {
   const [repos, setRepos] = useState([]);
   const [accessLevel, setAccessLevel] = useState("public"); // Default to public repos
+  const [filteredRepos, setFilteredRepos] = useState([]);
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
 
     if (accessToken) {
-      fetchRepositories(accessToken, accessLevel);
+      fetchRepositories(accessToken);
     }
-  }, [accessLevel]);
+  }, []);
 
-  const fetchRepositories = async (token, level) => {
+  useEffect(() => {
+    // Filter repositories based on the selected access level
+    if (accessLevel === "public") {
+      setFilteredRepos(repos.filter((repo) => !repo.private));
+    } else if (accessLevel === "private") {
+      setFilteredRepos(repos.filter((repo) => repo.private));
+    } else {
+      setFilteredRepos(repos); // Show all repos
+    }
+  }, [accessLevel, repos]);
+
+  const fetchRepositories = async (token) => {
     try {
       const response = await axios.get("https://api.github.com/user/repos", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: {
-          visibility: level, // Fetch public, private, or all repos
-        },
       });
-      setRepos(response.data);
+      setRepos(response.data); // Store all repositories
     } catch (error) {
       console.error("Error fetching repositories:", error);
     }
@@ -124,7 +133,7 @@ const Dashboard = ({ user }) => {
 
       {/* Repository List */}
       <ul style={{ listStyle: "none", padding: "0" }}>
-        {repos.map((repo) => (
+        {filteredRepos.map((repo) => (
           <li
             key={repo.id}
             style={{
