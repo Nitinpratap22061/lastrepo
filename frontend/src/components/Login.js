@@ -2,7 +2,7 @@ import React from "react";
 
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = "http://localhost:5000/auth/github";
+    window.location.href = "https://lastrepo-6nm3.onrender.com/auth/github";
   };
 
   return (
