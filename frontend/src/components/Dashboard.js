@@ -33,19 +33,47 @@ const Dashboard = ({ user }) => {
     setAccessLevel(level);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    window.location.href = "/";
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Welcome, {user?.name}!</h1>
+    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1>Welcome, {user?.name}!</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#dc3545",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       <h2>Your GitHub Details</h2>
-      <p>
-        <strong>Username:</strong> {user?.username}
-      </p>
-      <p>
-        <strong>Email:</strong> {user?.email}
-      </p>
-      <p>
-        <strong>Avatar:</strong> <img src={user?.avatarUrl} alt="Avatar" style={{ width: "50px", borderRadius: "50%" }} />
-      </p>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <img
+          src={user?.avatarUrl}
+          alt="Avatar"
+          style={{ width: "80px", borderRadius: "50%", marginRight: "20px" }}
+        />
+        <div>
+          <p>
+            <strong>Username:</strong> {user?.username}
+          </p>
+          <p>
+            <strong>Email:</strong> {user?.email}
+          </p>
+        </div>
+      </div>
 
       <h2>Your Repositories</h2>
 
@@ -102,8 +130,9 @@ const Dashboard = ({ user }) => {
             style={{
               border: "1px solid #ddd",
               borderRadius: "5px",
-              padding: "10px",
-              marginBottom: "10px",
+              padding: "20px",
+              marginBottom: "20px",
+              backgroundColor: "#f9f9f9",
             }}
           >
             <h3>
@@ -121,7 +150,13 @@ const Dashboard = ({ user }) => {
               <strong>Stars:</strong> {repo.stargazers_count}
             </p>
             <p>
+              <strong>Forks:</strong> {repo.forks_count}
+            </p>
+            <p>
               <strong>Visibility:</strong> {repo.private ? "Private" : "Public"}
+            </p>
+            <p>
+              <strong>Branches:</strong> {repo.default_branch}
             </p>
           </li>
         ))}
