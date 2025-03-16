@@ -2,7 +2,14 @@ const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 
-router.get("/github", passport.authenticate("github", { scope: ["user:email", "repo"] }));
+router.get("/github", (req, res, next) => {
+  const accessLevel = req.query.accessLevel || "public"; // Default to public repos
+
+  // Dynamically set the scope based on the access level
+  const scope = accessLevel === "public" ? ["user:email"] : ["user:email", "repo"];
+
+  passport.authenticate("github", { scope })(req, res, next);
+});
 
 router.get(
   "/github/callback",
