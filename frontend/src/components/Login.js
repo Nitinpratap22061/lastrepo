@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 
 const Login = () => {
+  const [accessLevel, setAccessLevel] = useState("public"); // Default to public repos
+
   const handleLogin = () => {
-    window.location.href = "https://lastrepo-6nm3.onrender.com/auth/github";
+    // Redirect to GitHub OAuth with the selected access level
+    window.location.href = `https://lastrepo-6nm3.onrender.com/auth/github?scope=${accessLevel}`;
   };
 
   return (
@@ -32,6 +35,29 @@ const Login = () => {
         <p style={{ fontSize: "14px", color: "#718096", marginBottom: "30px" }}>
           Please log in with your GitHub account to continue.
         </p>
+
+        {/* Repo Access Level Dropdown */}
+        <div style={{ marginBottom: "20px" }}>
+          <label htmlFor="accessLevel">Choose Repo Access Level:</label>
+          <select
+            id="accessLevel"
+            value={accessLevel}
+            onChange={(e) => setAccessLevel(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginTop: "10px",
+              borderRadius: "5px",
+              border: "1px solid #ddd",
+            }}
+          >
+            <option value="public">Public Repos</option>
+            <option value="private">Private Repos</option>
+            <option value="all">All Repos</option>
+          </select>
+        </div>
+
+        {/* Login Button */}
         <button
           onClick={handleLogin}
           style={{
