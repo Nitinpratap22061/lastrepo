@@ -6,20 +6,15 @@ import Dashboard from "./components/Dashboard";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [accessLevel, setAccessLevel] = useState("public");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token");
     const accessToken = new URLSearchParams(window.location.search).get("accessToken");
-    const selectedAccessLevel = new URLSearchParams(window.location.search).get("accessLevel") || "public";
 
     if (token && accessToken) {
       localStorage.setItem("token", token);
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("accessLevel", selectedAccessLevel);
-      
-      setAccessLevel(selectedAccessLevel);
 
       // Fetch user data after storing the token
       fetch("https://lastrepo-6nm3.onrender.com/user", {
@@ -34,9 +29,9 @@ function App() {
 
           // Redirect based on isNewUser
           if (data.isNewUser) {
-            window.location.href = `/intro?token=${token}&accessToken=${accessToken}&accessLevel=${selectedAccessLevel}`;
+            window.location.href = "/intro"; // Redirect to intro form
           } else {
-            window.location.href = `/dashboard?token=${token}&accessToken=${accessToken}&accessLevel=${selectedAccessLevel}`;
+            window.location.href = "/dashboard"; // Redirect to dashboard
           }
         })
         .catch((err) => {
@@ -45,9 +40,6 @@ function App() {
         });
     } else {
       const storedToken = localStorage.getItem("token");
-      const storedAccessLevel = localStorage.getItem("accessLevel") || "public";
-      setAccessLevel(storedAccessLevel);
-      
       if (storedToken) {
         fetch("https://lastrepo-6nm3.onrender.com/user", {
           headers: {
@@ -70,12 +62,7 @@ function App() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner"></div>
-        <p>Loading your GitHub profile...</p>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
@@ -86,10 +73,7 @@ function App() {
           path="/intro"
           element={user?.isNewUser ? <IntroForm user={user} /> : <Navigate to="/dashboard" />}
         />
-        <Route 
-          path="/dashboard" 
-          element={user ? <Dashboard user={user} initialAccessLevel={accessLevel} /> : <Navigate to="/" />} 
-        />
+        <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );
