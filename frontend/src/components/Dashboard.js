@@ -1,34 +1,42 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ user }) => {
   const [repos, setRepos] = useState([]);
-  const [accessLevel, setAccessLevel] = useState("public"); // Default to public repos
+  const [accessLevel, setAccessLevel] = useState("public");
   const [filteredRepos, setFilteredRepos] = useState([]);
-  const location = useLocation();
+  const [sortBy, setSortBy] = useState("stars"); // Default sorting by stars
+  const navigate = useNavigate();
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
-    const queryParams = new URLSearchParams(location.search);
-    const initialAccessLevel = queryParams.get("accessLevel") || "public";
-    setAccessLevel(initialAccessLevel);
 
     if (accessToken) {
       fetchRepositories(accessToken);
     }
-  }, [location]);
+  }, []);
 
   useEffect(() => {
     // Filter repositories based on the selected access level
+    let filtered = repos;
     if (accessLevel === "public") {
-      setFilteredRepos(repos.filter((repo) => !repo.private));
+      filtered = repos.filter((repo) => !repo.private);
     } else if (accessLevel === "private") {
-      setFilteredRepos(repos.filter((repo) => repo.private));
-    } else {
-      setFilteredRepos(repos); // Show all repos
+      filtered = repos.filter((repo) => repo.private);
     }
-  }, [accessLevel, repos]);
+
+    // Sort repositories
+    if (sortBy === "stars") {
+      filtered.sort((a, b) => b.stargazers_count - a.stargazers_count);
+    } else if (sortBy === "forks") {
+      filtered.sort((a, b) => b.forks_count - a.forks_count);
+    } else if (sortBy === "name") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    setFilteredRepos(filtered);
+  }, [accessLevel, repos, sortBy]);
 
   const fetchRepositories = async (token) => {
     try {
@@ -37,7 +45,7 @@ const Dashboard = ({ user }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setRepos(response.data); // Store all repositories
+      setRepos(response.data);
     } catch (error) {
       console.error("Error fetching repositories:", error);
     }
@@ -47,16 +55,20 @@ const Dashboard = ({ user }) => {
     setAccessLevel(level);
   };
 
+  const handleSortChange = (criteria) => {
+    setSortBy(criteria);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
-    window.location.href = "/";
+    navigate("/");
   };
 
   return (
     <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h1>Welcome, {user?.name}!</h1>
+        <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#2d3748" }}>Welcome, {user?.name}!</h1>
         <button
           onClick={handleLogout}
           style={{
@@ -66,115 +78,151 @@ const Dashboard = ({ user }) => {
             border: "none",
             borderRadius: "5px",
             cursor: "pointer",
+            transition: "background-color 0.3s ease",
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = "#c82333")}
+          onMouseOut={(e) => (e.target.style.backgroundColor = "#dc3545")}
         >
           Logout
         </button>
       </div>
 
-      <h2>Your GitHub Details</h2>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px", padding: "20px", backgroundColor: "#f8f9fa", borderRadius: "10px" }}>
         <img
           src={user?.avatarUrl}
           alt="Avatar"
-          style={{ width: "80px", borderRadius: "50%", marginRight: "20px" }}
+          style={{ width: "80px", borderRadius: "50%", marginRight: "20px", border: "2px solid #ddd" }}
         />
         <div>
-          <p>
+          <p style={{ fontSize: "1.2rem", color: "#4a5568" }}>
             <strong>Username:</strong> {user?.username}
           </p>
-          <p>
+          <p style={{ fontSize: "1.2rem", color: "#4a5568" }}>
             <strong>Email:</strong> {user?.email}
           </p>
         </div>
       </div>
 
-      <h2>Your Repositories</h2>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#2d3748", marginBottom: "20px" }}>Your Repositories</h2>
 
       {/* Access Level Buttons */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
         <button
           onClick={() => handleAccessLevelChange("public")}
           style={{
-            marginRight: "10px",
+            padding: "10px 20px",
             backgroundColor: accessLevel === "public" ? "#28a745" : "#6c757d",
             color: "#fff",
             border: "none",
-            padding: "10px 20px",
             borderRadius: "5px",
             cursor: "pointer",
+            transition: "background-color 0.3s ease",
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = accessLevel === "public" ? "#218838" : "#5a6268")}
+          onMouseOut={(e) => (e.target.style.backgroundColor = accessLevel === "public" ? "#28a745" : "#6c757d")}
         >
           Public Repos
         </button>
         <button
           onClick={() => handleAccessLevelChange("private")}
           style={{
-            marginRight: "10px",
+            padding: "10px 20px",
             backgroundColor: accessLevel === "private" ? "#28a745" : "#6c757d",
             color: "#fff",
             border: "none",
-            padding: "10px 20px",
             borderRadius: "5px",
             cursor: "pointer",
+            transition: "background-color 0.3s ease",
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = accessLevel === "private" ? "#218838" : "#5a6268")}
+          onMouseOut={(e) => (e.target.style.backgroundColor = accessLevel === "private" ? "#28a745" : "#6c757d")}
         >
           Private Repos
         </button>
         <button
           onClick={() => handleAccessLevelChange("all")}
           style={{
+            padding: "10px 20px",
             backgroundColor: accessLevel === "all" ? "#28a745" : "#6c757d",
             color: "#fff",
             border: "none",
-            padding: "10px 20px",
             borderRadius: "5px",
             cursor: "pointer",
+            transition: "background-color 0.3s ease",
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = accessLevel === "all" ? "#218838" : "#5a6268")}
+          onMouseOut={(e) => (e.target.style.backgroundColor = accessLevel === "all" ? "#28a745" : "#6c757d")}
         >
           All Repos
         </button>
       </div>
 
-      {/* Repository List */}
-      <ul style={{ listStyle: "none", padding: "0" }}>
+      {/* Sorting Dropdown */}
+      <div style={{ marginBottom: "20px" }}>
+        <label htmlFor="sortBy" style={{ marginRight: "10px", fontSize: "1rem", color: "#4a5568" }}>Sort by:</label>
+        <select
+          id="sortBy"
+          value={sortBy}
+          onChange={(e) => handleSortChange(e.target.value)}
+          style={{
+            padding: "8px",
+            borderRadius: "5px",
+            border: "1px solid #ddd",
+            backgroundColor: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          <option value="stars">Stars</option>
+          <option value="forks">Forks</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
+
+      {/* Repository Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
         {filteredRepos.map((repo) => (
-          <li
+          <div
             key={repo.id}
             style={{
               border: "1px solid #ddd",
-              borderRadius: "5px",
+              borderRadius: "10px",
               padding: "20px",
-              marginBottom: "20px",
-              backgroundColor: "#f9f9f9",
+              backgroundColor: "#fff",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              cursor: "pointer",
             }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = "translateY(-5px)";
+              e.currentTarget.style.boxShadow = "0 6px 12px rgba(0, 0, 0, 0.15)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+            }}
+            onClick={() => window.open(repo.html_url, "_blank")}
           >
-            <h3>
-              <a
-                href={repo.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "#0366d6", textDecoration: "none" }}
-              >
-                {repo.name}
-              </a>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#2d3748", marginBottom: "10px" }}>
+              {repo.name}
             </h3>
-            <p>{repo.description}</p>
-            <p>
-              <strong>Stars:</strong> {repo.stargazers_count}
-            </p>
-            <p>
-              <strong>Forks:</strong> {repo.forks_count}
-            </p>
-            <p>
+            <p style={{ fontSize: "1rem", color: "#4a5568", marginBottom: "10px" }}>{repo.description}</p>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <span style={{ fontSize: "0.875rem", color: "#718096" }}>
+                ⭐ {repo.stargazers_count}
+              </span>
+              <span style={{ fontSize: "0.875rem", color: "#718096" }}>
+                🍴 {repo.forks_count}
+              </span>
+            </div>
+            <p style={{ fontSize: "0.875rem", color: "#718096" }}>
               <strong>Visibility:</strong> {repo.private ? "Private" : "Public"}
             </p>
-            <p>
-              <strong>Branches:</strong> {repo.default_branch}
+            <p style={{ fontSize: "0.875rem", color: "#718096" }}>
+              <strong>Default Branch:</strong> {repo.default_branch}
             </p>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
