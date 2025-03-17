@@ -6,7 +6,7 @@ const Dashboard = ({ user }) => {
   const [repos, setRepos] = useState([]);
   const [accessLevel, setAccessLevel] = useState("public");
   const [filteredRepos, setFilteredRepos] = useState([]);
-  const [sortBy, setSortBy] = useState("stars"); // Default sorting by stars
+  const [sortBy, setSortBy] = useState("stars"); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Dashboard = ({ user }) => {
       filtered = repos.filter((repo) => repo.private);
     }
 
-    // Sort repositories
+  
     if (sortBy === "stars") {
       filtered.sort((a, b) => b.stargazers_count - a.stargazers_count);
     } else if (sortBy === "forks") {
