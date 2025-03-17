@@ -62,7 +62,7 @@ const Dashboard = ({ user }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
-    navigate("/");
+     window.location.href = "/";
   };
 
   return (
