@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const Dashboard = ({ user }) => {
   const [repos, setRepos] = useState([]);
-  const [accessLevel, setAccessLevel] = useState("public");
+  const [accessLevel, setAccessLevel] = useState("");
   const [filteredRepos, setFilteredRepos] = useState([]);
   const [sortBy, setSortBy] = useState("stars"); // Default sorting by stars
   const navigate = useNavigate();
