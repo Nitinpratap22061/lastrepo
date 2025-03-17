@@ -15,12 +15,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        console.log("🔍 Fetching user data with token:", token);
+        console.log(" Fetching user data with token:", token);
         const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("✅ User Data Fetched:", res.data);
+        console.log(" User Data Fetched:", res.data);
         setUser(res.data);
       } catch (error) {
         console.error(" Error fetching user:", error.response?.data || error.message);
