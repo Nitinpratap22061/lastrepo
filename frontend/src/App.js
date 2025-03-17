@@ -16,7 +16,7 @@ function App() {
       localStorage.setItem("token", token);
       localStorage.setItem("accessToken", accessToken);
 
-      // Fetch user data after storing the token
+      
       fetch("https://lastrepo-6nm3.onrender.com/user", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -27,11 +27,11 @@ function App() {
           setUser(data);
           setIsLoading(false);
 
-          // Redirect based on isNewUser
+          
           if (data.isNewUser) {
-            window.location.href = "/intro"; // Redirect to intro form
+            window.location.href = "/intro"; 
           } else {
-            window.location.href = "/dashboard"; // Redirect to dashboard
+            window.location.href = "/dashboard"; 
           }
         })
         .catch((err) => {
