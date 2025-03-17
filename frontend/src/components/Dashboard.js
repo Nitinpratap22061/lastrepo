@@ -1,228 +1,180 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
-const Dashboard = ({ user, initialAccessLevel }) => {
+const Dashboard = ({ user }) => {
   const [repos, setRepos] = useState([]);
-  const [accessLevel, setAccessLevel] = useState(initialAccessLevel || "public");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [accessLevel, setAccessLevel] = useState("public"); // Default to public repos
+  const [filteredRepos, setFilteredRepos] = useState([]);
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchRepos = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const accessToken = localStorage.getItem("accessToken");
-        if (!accessToken) {
-          throw new Error("Access token not found");
-        }
-        
-        const response = await axios.get("https://api.github.com/user/repos", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          params: {
-            per_page: 100,
-            sort: "updated",
-            direction: "desc"
-          }
-        });
-        
-        setRepos(response.data);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching repositories:", error);
-        setError("Failed to fetch repositories. Please try again.");
-        setIsLoading(false);
-      }
-    };
+    const accessToken = localStorage.getItem("accessToken");
+    const queryParams = new URLSearchParams(location.search);
+    const initialAccessLevel = queryParams.get("accessLevel") || "public";
+    setAccessLevel(initialAccessLevel);
 
-    fetchRepos();
-  }, []);
-
-  // Filter repos based on access level and search term
-  const filteredRepos = repos.filter(repo => {
-    // Filter by access level
-    if (accessLevel === "public" && repo.private) return false;
-    if (accessLevel === "private" && !repo.private) return false;
-    
-    // Filter by search term
-    if (searchTerm && !repo.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        !repo.description?.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
+    if (accessToken) {
+      fetchRepositories(accessToken);
     }
-    
-    return true;
-  });
+  }, [location]);
 
-  // Sort repos
-  const sortedRepos = [...filteredRepos].sort((a, b) => {
-    let comparison = 0;
-    
-    if (sortBy === "name") {
-      comparison = a.name.localeCompare(b.name);
-    } else if (sortBy === "stars") {
-      comparison = a.stargazers_count - b.stargazers_count;
-    } else if (sortBy === "updated") {
-      comparison = new Date(a.updated_at) - new Date(b.updated_at);
-    }
-    
-    return sortOrder === "asc" ? comparison : -comparison;
-  });
-
-  const handleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  useEffect(() => {
+    // Filter repositories based on the selected access level
+    if (accessLevel === "public") {
+      setFilteredRepos(repos.filter((repo) => !repo.private));
+    } else if (accessLevel === "private") {
+      setFilteredRepos(repos.filter((repo) => repo.private));
     } else {
-      setSortBy(field);
-      setSortOrder("asc");
+      setFilteredRepos(repos); // Show all repos
     }
+  }, [accessLevel, repos]);
+
+  const fetchRepositories = async (token) => {
+    try {
+      const response = await axios.get("https://api.github.com/user/repos", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setRepos(response.data); // Store all repositories
+    } catch (error) {
+      console.error("Error fetching repositories:", error);
+    }
+  };
+
+  const handleAccessLevelChange = (level) => {
+    setAccessLevel(level);
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("accessLevel");
     window.location.href = "/";
   };
 
   return (
-    <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="user-info">
-          <img src={user?.avatarUrl} alt="User avatar" className="avatar" />
-          <div className="user-details">
-            <h1>Welcome, {user?.name || user?.username}!</h1>
-            <p className="username">@{user?.username}</p>
-          </div>
-        </div>
-        <button onClick={handleLogout} className="logout-btn">
-          <i className="fas fa-sign-out-alt"></i> Logout
+    <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1>Welcome, {user?.name}!</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#dc3545",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Logout
         </button>
-      </header>
+      </div>
 
-      {/* Main content */}
-      <main className="dashboard-content">
-        <div className="dashboard-controls">
-          <div className="search-box">
-            <i className="fas fa-search search-icon"></i>
-            <input
-              type="text"
-              placeholder="Search repositories..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-          </div>
-          <div className="filter-controls">
-            <div className="access-filter">
-              <button
-                onClick={() => setAccessLevel("public")}
-                className={`filter-btn ${accessLevel === "public" ? "active" : ""}`}
-              >
-                <i className="fas fa-globe"></i> Public
-              </button>
-              <button
-                onClick={() => setAccessLevel("private")}
-                className={`filter-btn ${accessLevel === "private" ? "active" : ""}`}
-              >
-                <i className="fas fa-lock"></i> Private
-              </button>
-              <button
-                onClick={() => setAccessLevel("all")}
-                className={`filter-btn ${accessLevel === "all" ? "active" : ""}`}
-              >
-                <i className="fas fa-th-list"></i> All
-              </button>
-            </div>
-            <div className="sort-controls">
-              <span>Sort by: </span>
-              <button
-                onClick={() => handleSort("name")}
-                className={`sort-btn ${sortBy === "name" ? "active" : ""}`}
-              >
-                Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-              </button>
-              <button
-                onClick={() => handleSort("stars")}
-                className={`sort-btn ${sortBy === "stars" ? "active" : ""}`}
-              >
-                Stars {sortBy === "stars" && (sortOrder === "asc" ? "↑" : "↓")}
-              </button>
-              <button
-                onClick={() => handleSort("updated")}
-                className={`sort-btn ${sortBy === "updated" ? "active" : ""}`}
-              >
-                Updated {sortBy === "updated" && (sortOrder === "asc" ? "↑" : "↓")}
-              </button>
-            </div>
-          </div>
+      <h2>Your GitHub Details</h2>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+        <img
+          src={user?.avatarUrl}
+          alt="Avatar"
+          style={{ width: "80px", borderRadius: "50%", marginRight: "20px" }}
+        />
+        <div>
+          <p>
+            <strong>Username:</strong> {user?.username}
+          </p>
+          <p>
+            <strong>Email:</strong> {user?.email}
+          </p>
         </div>
+      </div>
 
-        {/* Repository list */}
-        {isLoading ? (
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p>Loading repositories...</p>
-          </div>
-        ) : error ? (
-          <div className="error-message">
-            <i className="fas fa-exclamation-circle"></i>
-            <p>{error}</p>
-          </div>
-        ) : sortedRepos.length === 0 ? (
-          <div className="empty-message">
-            <i className="fas fa-folder-open"></i>
-            <p>No repositories found. Try changing your filters.</p>
-          </div>
-        ) : (
-          <div className="repo-grid">
-            {sortedRepos.map((repo) => (
-              <div key={repo.id} className="repo-card">
-                <div className="repo-header">
-                  <h3 className="repo-name">
-                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                      {repo.name}
-                    </a>
-                  </h3>
-                  <span className={`repo-visibility ${repo.private ? "private" : "public"}`}>
-                    <i className={`fas ${repo.private ? "fa-lock" : "fa-globe"}`}></i>
-                    {repo.private ? "Private" : "Public"}
-                  </span>
-                </div>
-                <p className="repo-description">{repo.description || "No description available"}</p>
-                <div className="repo-stats">
-                  <div className="stat">
-                    <i className="fas fa-star"></i>
-                    <span>{repo.stargazers_count}</span>
-                  </div>
-                  <div className="stat">
-                    <i className="fas fa-code-branch"></i>
-                    <span>{repo.forks_count}</span>
-                  </div>
-                  <div className="stat">
-                    <i className="fas fa-code"></i>
-                    <span>{repo.language || "N/A"}</span>
-                  </div>
-                </div>
-                <div className="repo-footer">
-                  <span className="repo-updated">
-                    Updated {new Date(repo.updated_at).toLocaleDateString()}
-                  </span>
-                  <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="view-btn">
-                    View on GitHub
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+      <h2>Your Repositories</h2>
+
+      {/* Access Level Buttons */}
+      <div style={{ marginBottom: "20px" }}>
+        <button
+          onClick={() => handleAccessLevelChange("public")}
+          style={{
+            marginRight: "10px",
+            backgroundColor: accessLevel === "public" ? "#28a745" : "#6c757d",
+            color: "#fff",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Public Repos
+        </button>
+        <button
+          onClick={() => handleAccessLevelChange("private")}
+          style={{
+            marginRight: "10px",
+            backgroundColor: accessLevel === "private" ? "#28a745" : "#6c757d",
+            color: "#fff",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Private Repos
+        </button>
+        <button
+          onClick={() => handleAccessLevelChange("all")}
+          style={{
+            backgroundColor: accessLevel === "all" ? "#28a745" : "#6c757d",
+            color: "#fff",
+            border: "none",
+            padding: "10px 20px",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          All Repos
+        </button>
+      </div>
+
+      {/* Repository List */}
+      <ul style={{ listStyle: "none", padding: "0" }}>
+        {filteredRepos.map((repo) => (
+          <li
+            key={repo.id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: "5px",
+              padding: "20px",
+              marginBottom: "20px",
+              backgroundColor: "#f9f9f9",
+            }}
+          >
+            <h3>
+              <a
+                href={repo.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#0366d6", textDecoration: "none" }}
+              >
+                {repo.name}
+              </a>
+            </h3>
+            <p>{repo.description}</p>
+            <p>
+              <strong>Stars:</strong> {repo.stargazers_count}
+            </p>
+            <p>
+              <strong>Forks:</strong> {repo.forks_count}
+            </p>
+            <p>
+              <strong>Visibility:</strong> {repo.private ? "Private" : "Public"}
+            </p>
+            <p>
+              <strong>Branches:</strong> {repo.default_branch}
+            </p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
