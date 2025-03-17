@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://lastrepo-6nm3.onrender.com"; // Replace with your backend URL
+const API_URL = "https://lastrepo-6nm3.onrender.com"; 
 
 export const loginWithGitHub = () => {
   window.location.href = `${API_URL}/auth/github`;
