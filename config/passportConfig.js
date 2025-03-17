@@ -9,7 +9,7 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: "https://lastrepo-6nm3.onrender.com/auth/github/callback",
-      scope: ["user:email"], // Default scope (only public repos)
+      scope: ["user:email"], 
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
