@@ -8,12 +8,12 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const repoRoutes = require("./routes/repoRoutes");
 
-// Import Passport configuration
+
 require("./config/passportConfig");
 
 const app = express();
 
-// Middleware
+
 app.use(express.json());
 app.use(
   session({
@@ -25,20 +25,20 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// API routes
+
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/repos", repoRoutes);
 
-// Serve static files from the frontend/build directory
+
 app.use(express.static(path.join(__dirname, "frontend", "build")));
 
-// Render the frontend for all other routes
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 });
 
-// Connect to MongoDB
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -46,7 +46,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log("MongoDB connected"))
 .catch((err) => console.log(err));
 
-// Start server
+
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
 });
