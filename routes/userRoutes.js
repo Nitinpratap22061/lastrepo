@@ -7,16 +7,16 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   console.log("🔹 [USER ROUTE] Received Request to /user");
 
-  // Log the incoming headers and query params
+  
   console.log(" Headers Received:", req.headers);
   console.log(" Query Parameters:", req.query);
 
-  // Extract token from headers or query
+ 
   let token = req.headers.authorization || req.query.token;
 
   if (token) {
     if (token.startsWith("Bearer ")) {
-      token = token.split(" ")[1]; // Extract only the token part
+      token = token.split(" ")[1]; 
     }
   }
 
@@ -28,11 +28,11 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    // Verify the token
+   
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log(" [USER ROUTE] Decoded Token:", decoded);
 
-    // Find the user in the database
+  
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return the user details
+    
     res.json(user);
   } catch (error) {
     console.error(" [USER ROUTE] JWT Error:", error.message);
@@ -48,7 +48,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Update user profile (for intro form)
 router.put("/", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -65,7 +64,7 @@ router.put("/", async (req, res) => {
     const { linkedin, source } = req.body;
     user.linkedin = linkedin || user.linkedin;
     user.source = source || user.source;
-    user.isNewUser = false; // Set isNewUser to false
+    user.isNewUser = false; 
 
     await user.save();
     res.json(user);
@@ -73,7 +72,7 @@ router.put("/", async (req, res) => {
     res.status(500).json({ error: "Failed to update user profile" });
   }
 });
-// Check if user is new (first login)
+
 router.get("/check-first-login", async (req, res) => {
   console.log("🔹 [USER ROUTE] Received Request to Check First Login");
 
